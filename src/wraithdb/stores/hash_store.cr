@@ -34,6 +34,19 @@ module Wraith
       value.nil? ? nil : {value, entry.expires_at}
     end
 
+    # Sets the value for the key. Accepts a (time-to-live) `ttl` Time::Span
+    # value. Keys that have exceeded their TTL will be purged.
+    #
+    # **Return value**: The value of the key.
+    #
+    # Example:
+    #
+    # ```
+    # hash_store.set("key", 1)
+    # hash_store.set(key: "key", val: 1)
+    # hash_store.set("key", 1, ttl: 500.milliseconds)
+    # hash_store.set(key: "key", val: 1, ttl: 2.days)
+    # ```
     def set(key : K, val : V, ttl = nil)
       store[key] = HashEntry(V).new(val, ttl)
     end
@@ -41,7 +54,7 @@ module Wraith
     # Sets the value for the key. Keys set with the `[]=` syntax do not support
     # an expiration.
     #
-    # **Return value**: Integer: The value of the key.
+    # **Return value**: The value of the key.
     #
     # Example:
     #
@@ -85,6 +98,8 @@ module Wraith
       end
     end
 
+    # Returns an array of all keys in a hash.
+    # If a key is expired, it will not be returned.
     def keys : Array(K)
       _keys = [] of K
 
@@ -95,6 +110,8 @@ module Wraith
       _keys
     end
 
+    # Returns an array of all values in a hash.
+    # If a key is expired, its value will not be returned.
     def values : Array(V)
       _values = [] of V
 
