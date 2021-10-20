@@ -10,13 +10,13 @@ module Wraith
     getter value
     getter expires_at
 
-    def initialize(@value : V, expires_in : Time::Span?)
-      update_expiration(expires_in)
+    def initialize(@value : V, ttl : Time::Span?)
+      update_expiration(ttl)
     end
 
-    def update_expiration(expires_in : Time::Span?)
-      if expires_in
-        @expires_at = (Time.utc + expires_in).to_unix_ms
+    def update_expiration(ttl : Time::Span?)
+      if ttl
+        @expires_at = (Time.utc + ttl).to_unix_ms
       else
         @expires_at = nil
       end

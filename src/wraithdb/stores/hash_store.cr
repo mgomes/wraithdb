@@ -2,7 +2,6 @@ module Wraith
   struct HashStore(K, V)
     getter store
 
-    delegate keys, to: @store
     delegate dup, to: @store
 
     def initialize
@@ -35,8 +34,8 @@ module Wraith
       value.nil? ? nil : {value, entry.expires_at}
     end
 
-    def set(key : K, val : V, expires_in = nil)
-      store[key] = HashEntry(V).new(val, expires_in)
+    def set(key : K, val : V, ttl = nil)
+      store[key] = HashEntry(V).new(val, ttl)
     end
 
     # Sets the value for the key. Keys set with the `[]=` syntax do not support
@@ -59,7 +58,7 @@ module Wraith
       entry ? entry.value : nil
     end
 
-    # Returns the remaining time to live of a key. If an `expires_in` is set
+    # Returns the remaining time to live of a key. If a `ttl` is set
     # it will update the TTL for the key to the specified value.
     #
     # **Return value**: Integer: TTL in seconds, or Nil to indicate the key
@@ -72,19 +71,38 @@ module Wraith
     # hash_store.ttl("bar", 0) => 0
     # hash_store.ttl("bar") # => nil
     # ```
-    def ttl(key : K, expires_in = nil) : Int64?
+    def ttl(key : K, ttl = nil) : Int64?
       entry = store[key]?
 
-      if entry
-        entry.update_expiration(expires_in)
+      if entry && ttl
+        entry.update_expiration(ttl)
+        store[key] = entry
+        entry.expires_in_ms
+      elsif entry
         entry.expires_in_ms
       else
         nil
       end
     end
 
-    def values
-      store.values.map(&.value)
+    def keys : Array(K)
+      _keys = [] of K
+
+      store.each do |k, entry|
+        _keys << k unless entry.expired?
+      end
+
+      _keys
+    end
+
+    def values : Array(V)
+      _values = [] of V
+
+      store.each do |k, entry|
+        _values << entry.value unless entry.expired?
+      end
+
+      _values
     end
   end
 end
