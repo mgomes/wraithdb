@@ -8,6 +8,18 @@ module Wraith
       @store = {} of K => HashEntry(V)
     end
 
+    # Returns the value of the key. If the key does not exist or has expired,
+    # nil is returned.
+    #
+    # **Return value**: The value for the key.
+    #
+    # Example:
+    #
+    # ```
+    # hash_store.set("a", 1)
+    # hash_store.get("a") => 1
+    # hash_store.get("b") => nil
+    # ```
     def get(key : K)
       entry = store[key]?
       value = nil
@@ -19,6 +31,8 @@ module Wraith
       value
     end
 
+    # An alias for #get
+    # ```
     def [](key : K)
       get(key)
     end
