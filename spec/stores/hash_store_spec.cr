@@ -36,7 +36,7 @@ describe Wraith do
       end
     end
 
-    describe "values with expirations" do
+    describe "keys with expirations" do
       hash_store = Wraith::HashStore(String, String).new
       time = Time.local(2021, 10, 10, 10, 10, 10)
 
@@ -64,6 +64,31 @@ describe Wraith do
         it "should return nil when a ttl is not set for the key" do
           hash_store.set("boop", "beep")
           hash_store.ttl("boop").should be_nil
+        end
+      end
+
+      describe "#get_with_expiration" do
+        it "should return the remaining ttl in ms" do
+          Timecop.freeze(time) do |frozen_time|
+            hash_store.set("boop", "beep", ttl: 10.seconds)
+            expires_ms = 10 * 1000
+            hash_store.get_with_expiration("boop").should eq({"beep", expires_ms})
+          end
+        end
+
+        it "should return nil for the ttl portion of the tuple if no expiration set" do
+          hash_store.set("boop", "beep")
+          hash_store.get_with_expiration("boop").should eq({"beep", nil})
+        end
+
+        it "should return nil if the key does not exist" do
+          hash_store.get_with_expiration("boom").should be_nil
+        end
+
+        it "should return nil if the key has expired" do
+          hash_store.set("boom", "bleep", ttl: 5.milliseconds)
+          sleep 6.milliseconds
+          hash_store.get_with_expiration("boom").should be_nil
         end
       end
 

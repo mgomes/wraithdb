@@ -23,15 +23,31 @@ module Wraith
       get(key)
     end
 
-    def get_with_expiration(key : K) : Tuple(K, Int64)?
+    # Returns the value of the key along with the remaining TTL, in ms, as a
+    # tuple. If the key does not have a TTL, the TTL portion of the tuple will
+    # be nil. If the key does not exist or has expired, nil is returned.
+    #
+    # **Return value**: A tuple containing the value and expiration in ms.
+    #
+    # Example:
+    #
+    # ```
+    # hash_store.set("a", 1, ttl: 10.milliseconds)
+    # hash_store.set("b", 2)
+    # hash_store.get_with_expiration("a") => {1, 10}
+    # hash_store.get_with_expiration("b") => {2, nil}
+    # hash_store.get_with_expiration("c") => nil
+    # ```
+    def get_with_expiration(key : K) : Tuple(V, Int64?)?
       entry = store[key]?
-      value = nil
 
-      if entry && !entry.expired?
-        value = entry.value
+      if entry && entry.has_expiration? && !entry.expired?
+        {entry.value, entry.expires_in_ms}
+      elsif entry && !entry.has_expiration?
+        {entry.value, nil}
+      else
+        nil
       end
-
-      value.nil? ? nil : {value, entry.expires_at}
     end
 
     # Sets the value for the key. Accepts a (time-to-live) `ttl` Time::Span

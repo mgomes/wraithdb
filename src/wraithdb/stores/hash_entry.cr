@@ -22,6 +22,10 @@ module Wraith
       end
     end
 
+    def has_expiration?
+      expires_at != nil
+    end
+
     # Checks if the entry is expired.
     def expired?
       if expires_at
