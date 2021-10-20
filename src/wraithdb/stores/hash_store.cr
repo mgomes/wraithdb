@@ -2,6 +2,9 @@ module Wraith
   struct HashStore(K, V)
     getter store
 
+    delegate keys, to: @store
+    delegate dup, to: @store
+
     def initialize
       @store = {} of K => HashEntry(V)
     end
@@ -50,8 +53,10 @@ module Wraith
       set(key, val)
     end
 
-    def del(key : K)
-      store.delete(key)
+    # Deletes the key-value pair and returns the value, otherwise returns nil.
+    def delete(key : K)
+      entry = store.delete(key)
+      entry ? entry.value : nil
     end
 
     # Returns the remaining time to live of a key. If an `expires_in` is set
@@ -78,8 +83,8 @@ module Wraith
       end
     end
 
-    def keys
-      store.keys
+    def values
+      store.values.map(&.value)
     end
   end
 end
