@@ -34,9 +34,97 @@ describe Wraith do
           hash_store["some_key"].should be_nil
         end
       end
+    end
 
-      describe "values with expirations" do
+    describe "keys with expirations" do
+      hash_store = Wraith::HashStore(String, String).new
+      time = Time.local(2021, 10, 10, 10, 10, 10)
 
+      before_each do
+        hash_store = Wraith::HashStore(String, String).new
+      end
+
+      describe "#ttl" do
+        it "should return the remaining ttl in ms" do
+          Timecop.freeze(time) do |frozen_time|
+            hash_store.set("boop", "beep", ttl: 10.seconds)
+            hash_store.ttl("boop").should eq (10 * 1000) # ms
+          end
+        end
+
+        it "should update the ttl when called with a Time::Span" do
+          Timecop.freeze(time) do |frozen_time|
+            hash_store.set("boop", "beep", ttl: 23.seconds)
+            hash_store.ttl("boop").should eq (23 * 1000) # ms
+            hash_store.ttl("boop", 40.seconds)
+            hash_store.ttl("boop").should eq (40 * 1000) # ms
+          end
+        end
+
+        it "should return nil when a ttl is not set for the key" do
+          hash_store.set("boop", "beep")
+          hash_store.ttl("boop").should be_nil
+        end
+      end
+
+      describe "#get_with_expiration" do
+        it "should return the remaining ttl in ms" do
+          Timecop.freeze(time) do |frozen_time|
+            hash_store.set("boop", "beep", ttl: 10.seconds)
+            expires_ms = 10 * 1000
+            hash_store.get_with_expiration("boop").should eq({"beep", expires_ms})
+          end
+        end
+
+        it "should return nil for the ttl portion of the tuple if no expiration set" do
+          hash_store.set("boop", "beep")
+          hash_store.get_with_expiration("boop").should eq({"beep", nil})
+        end
+
+        it "should return nil if the key does not exist" do
+          hash_store.get_with_expiration("boom").should be_nil
+        end
+
+        it "should return nil if the key has expired" do
+          hash_store.set("boom", "bleep", ttl: 5.milliseconds)
+          sleep 6.milliseconds
+          hash_store.get_with_expiration("boom").should be_nil
+        end
+      end
+
+      describe "key expirations" do
+        it "#get should return nil after the key expires" do
+          hash_store.set("boop", "beep", ttl: 5.milliseconds)
+          sleep 6.milliseconds
+          hash_store.get("boop").should be_nil
+        end
+
+        it "#[] should return nil after the key expires" do
+          hash_store.set("boop", "beep", ttl: 5.milliseconds)
+          sleep 6.milliseconds
+          hash_store["boop"].should be_nil
+        end
+      end
+    end
+
+    describe "#delete" do
+      hash_store = Wraith::HashStore(String, Int32).new
+
+      it "should delete a key" do
+        hash_store.set("a", 1)
+        hash_store.set("b", 2)
+        hash_store.delete("a")
+        hash_store["a"].should be_nil
+      end
+
+      it "should return the deleted key" do
+        hash_store.set("a", 32)
+        hash_store.delete("a").should eq 32
+      end
+
+      it "should return the nil if the key does not exist" do
+        hash_store.set("a", 32)
+        hash_store.delete("z").should be_nil
       end
     end
 
@@ -47,6 +135,44 @@ describe Wraith do
         hash_store.set("a", 1)
         hash_store.set("b", 2)
         hash_store.keys.should eq ["a", "b"]
+      end
+
+      it "should return an empty array if there are no keys" do
+        hash_store = Wraith::HashStore(String, Int32).new
+        hash_store.keys.should be_empty
+      end
+
+      it "should NOT return expired keys" do
+        hash_store.set("a", 1)
+        hash_store.set("b", 2, ttl: 5.milliseconds)
+        sleep 6.milliseconds
+        hash_store.keys.should eq ["a"]
+      end
+    end
+
+    describe "#values" do
+      hash_store = Wraith::HashStore(String, Int32).new
+
+      it "should return an array of all the values" do
+        hash_store.set("a", 1)
+        hash_store.set("b", 2)
+        hash_store.set("c", 3)
+
+        hash_store.values.should eq [1, 2, 3]
+      end
+
+      it "should return an empty array if there are no keys" do
+        hash_store = Wraith::HashStore(String, Int32).new
+        hash_store.values.should be_empty
+      end
+
+      it "should NOT return expired key values" do
+        hash_store.set("a", 1)
+        hash_store.set("b", 2)
+        hash_store.set("c", 3, ttl: 5.milliseconds)
+        sleep 6.milliseconds
+
+        hash_store.values.should eq [1, 2]
       end
     end
   end
