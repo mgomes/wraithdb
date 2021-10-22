@@ -78,7 +78,9 @@ module Wraith
     # hash_store.set(key: "key", val: 1, ttl: 2.days)
     # ```
     def set(key : K, val : V, ttl = nil)
-      store[key] = HashEntry(V).new(val, ttl)
+      entry = HashEntry(V).new(val, ttl)
+      store[key] = entry
+      entry.value
     end
 
     # Sets the value for the key. Keys set with the `[]=` syntax do not support
