@@ -78,7 +78,9 @@ module Wraith
     # hash_store.set(key: "key", val: 1, ttl: 2.days)
     # ```
     def set(key : K, val : V, ttl = nil)
-      store[key] = HashEntry(V).new(val, ttl)
+      entry = HashEntry(V).new(val, ttl)
+      store[key] = entry
+      entry.value
     end
 
     # Sets the value for the key. Keys set with the `[]=` syntax do not support
@@ -150,6 +152,34 @@ module Wraith
       end
 
       _values
+    end
+
+    # Increments the value of a specified key. The class of the value needs
+    # to either support `+` or have that method defined. If a magnitude is not
+    # is not specified, it defaults to 1. If a key does not exist, the magnitude
+    # will be set as the key's value and the key will not have an expiration.
+    #
+    # **Return value**: The incremented value.
+    #
+    # Examples:
+    #
+    # ```
+    # hash_store.set("foo", 3) => 3
+    # hash_store.inc("foo") => 4
+    # hash_store.inc("foo", 3) => 7
+    # hash_store.inc("foo", -2) => 5
+    # hash_store.inc("bar") => 1
+    # ```
+    def inc(key : K, magnitude = 1) : V
+      entry = store[key]?
+
+      if entry && !entry.expired?
+        entry.value += magnitude
+        store[key] = entry
+        entry.value
+      else
+        set(key, magnitude)
+      end
     end
   end
 end

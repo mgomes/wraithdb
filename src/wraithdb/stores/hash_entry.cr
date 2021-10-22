@@ -7,7 +7,7 @@ module Wraith
 
     @expires_at : Int64?
 
-    getter value
+    property value
     getter expires_at
 
     def initialize(@value : V, ttl : Time::Span?)

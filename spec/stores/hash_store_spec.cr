@@ -175,5 +175,41 @@ describe Wraith do
         hash_store.values.should eq [1, 2]
       end
     end
+
+    describe "#inc" do
+      hash_store = Wraith::HashStore(String, Int32).new
+
+      before_each do
+        hash_store = Wraith::HashStore(String, Int32).new
+        hash_store["foo"] = 5
+      end
+
+      it "should increment a key with a positive magnitude" do
+        hash_store.inc("foo", 2).should eq 7
+        hash_store["foo"].should eq 7
+      end
+
+      it "should increment a key with a negative magnitude" do
+        hash_store.inc("foo", -2).should eq 3
+        hash_store["foo"].should eq 3
+      end
+
+      it "should default to a magnitude of 1" do
+        hash_store.inc("foo").should eq 6
+        hash_store["foo"].should eq 6
+      end
+
+      it "should set the key with the value of the magnitude if key doesn't exist" do
+        hash_store.inc("bar", magnitude: 3).should eq 3
+        hash_store["bar"].should eq 3
+      end
+
+      it "should set the key with the value of the magnitude of key expired" do
+        hash_store.set("c", 5, ttl: 5.milliseconds)
+        sleep 6.milliseconds
+        hash_store.inc("c", magnitude: 3).should eq 3
+        hash_store["c"].should eq 3
+      end
+    end
   end
 end
