@@ -4,7 +4,7 @@ version: 0.1.0
 authors:
   - Mauricio Gomes <mauricio@edge14.com>
 
-crystal: 1.2.0
+crystal: 1.2.1
 
 dependencies:
   msgpack:
