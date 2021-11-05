@@ -26,6 +26,16 @@ describe Wraith do
         end
       end
 
+      describe "#==" do
+        it "should return true if the arrays are equal" do
+          (array_store == sample_array).should be_true
+        end
+
+        it "should return false if the arrays are not equal" do
+          (array_store == sample_array.reverse).should be_false
+        end
+      end
+
       describe "#all?" do
         it "should return true if all elements match criteria" do
           evens = Wraith::ArrayStore(Int32).new
@@ -235,6 +245,32 @@ describe Wraith do
           array_store.assign(dupe_values)
           array_store.uniq.should eq([1, 2, 3])
           array_store.should eq dupe_values
+        end
+      end
+    end
+
+    describe "write method" do
+      array_store = Wraith::ArrayStore(Int32).new
+
+      describe "#<<" do
+        it "should push an element onto the end of the array" do
+          array_store << 1
+          array_store << 2
+          array_store.should eq [1, 2]
+        end
+      end
+
+      describe "#[]=" do
+        it "should insert an element at the specified index" do
+          array_store.assign([1, 2, 3])
+          array_store[1] = 4
+          array_store.should eq [1, 4, 3]
+        end
+
+        it "should insert an element at the specified range" do
+          array_store.assign([1, 2, 3, 4, 5])
+          array_store[1..3] = 4
+          array_store.should eq [1, 4, 5]
         end
       end
     end
