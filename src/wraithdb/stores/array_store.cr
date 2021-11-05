@@ -53,6 +53,7 @@ module Wraith
 
     def compact! : self
       store.compact!
+      self
     end
 
     def delete(obj) : T?
@@ -61,6 +62,7 @@ module Wraith
 
     def delete_at(index : Int) : self
       store.delete_at(index)
+      self
     end
 
     def pop : T
@@ -98,8 +100,34 @@ module Wraith
       self
     end
 
+    # Modifies `self`, deleting the elements in the collection for which the
+    # passed block returns `true`. Returns `self`.
+    #
+    # ```
+    # ary = [1, 6, 2, 4, 8]
+    # ary.reject! { |x| x > 3 }
+    # ary # => [1, 2]
+    # ```
+    def reject!(& : T ->) : self
+      store.reject! { |e| yield e }
+      self
+    end
+
+    # Modifies `self`, deleting the elements in the collection for which
+    # `pattern === element`.
+    #
+    # ```
+    # ary = [1, 6, 2, 4, 8]
+    # ary.reject!(3..7)
+    # ary # => [1, 2, 8]
+    # ```
     def reject!(pattern) : self
       store.reject! { |elem| pattern === elem }
+      self
+    end
+
+    def reverse! : self
+      store.reverse!
       self
     end
 
@@ -109,6 +137,7 @@ module Wraith
 
     def uniq! : self
       store.uniq!
+      self
     end
   end
 end

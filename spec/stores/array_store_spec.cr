@@ -273,6 +273,107 @@ describe Wraith do
           array_store.should eq [1, 4, 5]
         end
       end
+
+      describe "#compact!" do
+        it "should modify an array to remove nils" do
+          array = Wraith::ArrayStore(Int32?).new
+          array.assign([1, nil, 2, nil])
+          array.compact!
+          array.should eq [1, 2]
+        end
+
+        it "should leave an array without nils alone" do
+          sample_array = [1, 2, 3, 4, 5]
+          array_store.assign(sample_array)
+          array_store.compact!
+          array_store.should eq sample_array
+        end
+      end
+
+      describe "#delete" do
+        it "should remove an element from the array" do
+          array_store.assign([1, 2, 3])
+          array_store.delete(2)
+          array_store.should eq [1, 3]
+        end
+
+        it "should return the deleted element" do
+          array_store.assign([1, 2, 3])
+          array_store.delete(2).should eq 2
+        end
+      end
+
+      describe "#delete_at" do
+        it "should remove an element from the array at the specified index" do
+          array_store.assign([1, 2, 3])
+          array_store.delete_at(1)
+          array_store.should eq [1, 3]
+        end
+      end
+
+      describe "#pop" do
+        it "should remove the last element from the array and return it" do
+          array_store.assign([1, 2, 3])
+          array_store.pop.should eq 3
+          array_store.should eq [1, 2]
+        end
+      end
+
+      describe "#push" do
+        it "should add an element to the end of the array" do
+          array_store.assign([1, 2, 3])
+          array_store.push(4)
+          array_store.should eq [1, 2, 3, 4]
+        end
+      end
+
+      describe "#reject!" do
+        it "should modify an array to remove elements matching block criteria" do
+          array = Wraith::ArrayStore(Int32).new
+          array.assign([1, 2, 3, 4, 5])
+          array.reject! { |elem| elem.even? }
+          array.should eq [1, 3, 5]
+        end
+
+        it "should modify an array to remove elements matching a regex" do
+          array = Wraith::ArrayStore(String).new
+          array.assign(["foo", "bar", "food", "barn"])
+          array.reject!(/^ba/)
+          array.should eq ["foo", "food"]
+        end
+
+        it "should modify an array to remove elements matching a range" do
+          array = Wraith::ArrayStore(Int32).new
+          array = [1, 6, 2, 4, 8]
+          array.reject!(3..7)
+          array.should eq [1, 2, 8]
+        end
+      end
+
+      describe "#reverse!" do
+        it "should modify an array to reverse its elements" do
+          array_store.assign([1, 2, 3])
+          array_store.reverse!
+          array_store.should eq [3, 2, 1]
+        end
+      end
+
+      describe "#shift" do
+        it "should remove the first element from the array and return it" do
+          array_store.assign([1, 2, 3])
+          array_store.shift.should eq 1
+          array_store.should eq [2, 3]
+        end
+      end
+
+      describe "#uniq!" do
+        it "should modify an array to remove duplicate elements" do
+          array = Wraith::ArrayStore(Int32).new
+          array.assign([1, 2, 3, 1, 2, 3, 3, 3, 1, 1])
+          array.uniq!
+          array.should eq [1, 2, 3]
+        end
+      end
     end
   end
 end
