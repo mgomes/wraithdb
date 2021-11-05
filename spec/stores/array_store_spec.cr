@@ -209,7 +209,9 @@ describe Wraith do
       describe "#shuffle" do
         array_store.assign([1, 2, 3])
         b = array_store.shuffle
-        (array_store == b).should be_false
+        while (array_store == b)
+          b = array_store.shuffle
+        end
         array_store.should eq([1, 2, 3])
 
         3.times { b.includes?(array_store.shift).should be_true }
