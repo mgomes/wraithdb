@@ -29,5 +29,86 @@ module Wraith
     def initialize
       @store = [] of T
     end
+
+    def <<(elem : T) : self
+      store << elem
+      self
+    end
+
+    def []=(index : Int, value : T)
+      store[index] = value
+    end
+
+    def []=(range : Range, value : T)
+      store[range] = value
+    end
+
+    def ==(other_array) : Bool
+      store == other_array
+    end
+
+    def assign(new_array : Array(T))
+      @store = new_array
+    end
+
+    def compact! : self
+      store.compact!
+    end
+
+    def delete(obj) : T?
+      store.delete(obj)
+    end
+
+    def delete_at(index : Int) : self
+      store.delete_at(index)
+    end
+
+    def pop : T
+      store.pop
+    end
+
+    # Append. Pushes one value to the end of `self`, given that the type of the value is *T*
+    # (which might be a single type or a union of types).
+    # This method returns `self`, so several calls can be chained.
+    # See `pop` for the opposite effect.
+    #
+    # ```
+    # a = ["a", "b"]
+    # a.push("c") # => ["a", "b", "c"]
+    # a.push(1)   # Errors, because the array only accepts String.
+    #
+    # a = ["a", "b"] of (Int32 | String)
+    # a.push("c") # => ["a", "b", "c"]
+    # a.push(1)   # => ["a", "b", "c", 1]
+    # ```
+    def push(value : T)
+      store.push(value)
+      self
+    end
+
+    # Append multiple values. The same as `push`, but takes an arbitrary number
+    # of values to push into `self`. Returns `self`.
+    #
+    # ```
+    # a = ["a"]
+    # a.push("b", "c") # => ["a", "b", "c"]
+    # ```
+    def push(*values : T) : self
+      store.push(values)
+      self
+    end
+
+    def reject!(pattern) : self
+      store.reject! { |elem| pattern === elem }
+      self
+    end
+
+    def shift : T
+      store.shift
+    end
+
+    def uniq! : self
+      store.uniq!
+    end
   end
 end
