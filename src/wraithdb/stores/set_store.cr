@@ -3,6 +3,7 @@ module Wraith
     getter store
 
     delegate :empty?, to: @store
+    delegate :includes?, to: @store
     delegate :inspect, to: @store
     delegate :size, to: @store
 
