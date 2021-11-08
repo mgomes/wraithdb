@@ -48,7 +48,7 @@ module Wraith
     end
 
     def assign(new_set : Set(T)) : self
-      @store = new_set
+      @store = new_set.clone
       self
     end
 
