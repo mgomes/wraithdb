@@ -63,6 +63,16 @@ describe Wraith do
         end
       end
 
+      describe "#includes?" do
+        it "should return true if the set contains the element" do
+          set_store1.includes?(5).should be_true
+        end
+
+        it "should return false if the set does not contain the element" do
+          set_store1.includes?(10).should be_false
+        end
+      end
+
       describe "#inspect" do
         it "should return a string representation of the set" do
           set_store1.inspect.should eq "Set{0, 1, 2, 3, 4, 5, 6, 7, 8, 9}"
@@ -122,6 +132,22 @@ describe Wraith do
           union_set.assign(Set{0, 1, 2, 3, 5})
 
           (set_a | set_b).should eq union_set
+        end
+      end
+    end
+
+    describe "write method" do
+      sample_set = Set{0, 1, 2, 3, 4, 5, 6, 7, 8, 9}
+      set_store = Wraith::SetStore(Int32).new
+
+      before_each do
+        set_store.assign(sample_set)
+      end
+
+      describe "#add" do
+        it "should add the element to the set" do
+          set_store.add(10)
+
         end
       end
     end
