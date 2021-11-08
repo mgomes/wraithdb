@@ -62,6 +62,68 @@ describe Wraith do
           set_store2.empty?.should be_true
         end
       end
+
+      describe "#inspect" do
+        it "should return a string representation of the set" do
+          set_store1.inspect.should eq "Set{0, 1, 2, 3, 4, 5, 6, 7, 8, 9}"
+        end
+      end
+
+      describe "#intersects?" do
+        it "should return true if the set intersects with the other set" do
+          set_store1.intersects?(set_store2).should be_true
+        end
+
+        it "should return false if the set does not intersect with the other set" do
+          sample_set3 = Set{10, 11, 12, 13, 14}
+          set_store3 = Wraith::SetStore(Int32).new
+          set_store3.assign(sample_set3)
+          set_store1.intersects?(set_store3).should be_false
+        end
+      end
+
+      describe "#proper_subset_of?" do
+        it "should return true if the set is a proper subset of the other set" do
+          set_store2.proper_subset_of?(set_store1).should be_true
+          # The inverse of a proper subset is a proper superset
+          set_store1.proper_subset_of?(set_store2).should be_false
+        end
+      end
+
+      describe "#proper_superset_of?" do
+        it "should return true if the set is a proper subset of the other set" do
+          set_store1.proper_superset_of?(set_store2).should be_true
+          # The inverse of a proper superset is a proper subset
+          set_store2.proper_superset_of?(set_store1).should be_false
+        end
+      end
+
+      describe "#size" do
+        it "should return the size of the set" do
+          set_store1.size.should eq 10
+        end
+      end
+
+      describe "#subset_of?" do
+        it "should return true if the set is a proper subset of the other set" do
+          set_store2.subset_of?(set_store1).should be_true
+          # The inverse of a subset is a superset
+          set_store1.subset_of?(set_store2).should be_false
+        end
+      end
+
+      describe "#|" do
+        it "should return a new SetStore containing the unique elements of both sets" do
+          set_a = Wraith::SetStore(Int32).new
+          set_b = Wraith::SetStore(Int32).new
+          union_set = Wraith::SetStore(Int32).new
+          set_a.assign(Set{0, 1, 2, 3})
+          set_b.assign(Set{0, 0, 1, 2, 2, 3, 5})
+          union_set.assign(Set{0, 1, 2, 3, 5})
+
+          (set_a | set_b).should eq union_set
+        end
+      end
     end
   end
 end

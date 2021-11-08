@@ -2,15 +2,9 @@ module Wraith
   struct SetStore(T)
     getter store
 
-    delegate :===, to: @store
     delegate :empty?, to: @store
     delegate :inspect, to: @store
-    delegate :intersects?, to: @store
-    delegate :proper_subset_of?, to: @store
-    delegate :proper_superset_of?, to: @store
     delegate :size, to: @store
-    delegate :subset_of?, to: @store
-    delegate :|, to: @store
 
     def initialize
       @store = Set(T).new
@@ -40,6 +34,10 @@ module Wraith
       store == other.store
     end
 
+    def ===(other : SetStore(T)) : Bool
+      store === other.store
+    end
+
     def add(object : T)
 
     end
@@ -61,8 +59,29 @@ module Wraith
 
     end
 
+    def intersects?(other : SetStore(T)) : Bool
+      self.store.intersects?(other.store)
+    end
+
+    def proper_subset_of?(other : SetStore(T)) : Bool
+      self.store.proper_subset_of?(other.store)
+    end
+
+    def proper_superset_of?(other : SetStore(T)) : Bool
+      self.store.proper_superset_of?(other.store)
+    end
+
+    def subset_of?(other : SetStore(T)) : Bool
+      self.store.subset_of?(other.store)
+    end
+
     def subtract(other : Enumerable) : self
 
+    end
+
+    def |(other : SetStore(T)) : SetStore(T)
+      new_set = SetStore(T).new
+      new_set.assign(store | other.store)
     end
   end
 end
