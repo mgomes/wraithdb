@@ -55,6 +55,18 @@ describe Wraith do
         end
       end
 
+      describe "#each" do
+        it "should iterate over the elements of the set" do
+          i = 0
+          set_store1.each do |element|
+            i += 1
+            element.should be_a Int32
+          end
+
+          i.should eq 10
+        end
+      end
+
       describe "#empty?" do
         it "should return true if the set is empty" do
           set_store1.empty?.should be_false

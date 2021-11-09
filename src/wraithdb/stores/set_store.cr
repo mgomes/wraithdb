@@ -2,6 +2,7 @@ module Wraith
   struct SetStore(T)
     getter store
 
+    delegate :each, to: @store
     delegate :empty?, to: @store
     delegate :includes?, to: @store
     delegate :inspect, to: @store
