@@ -159,7 +159,73 @@ describe Wraith do
       describe "#add" do
         it "should add the element to the set" do
           set_store.add(10)
+          set_store.size.should eq 11
+          set_store.includes?(10).should be_true
+        end
+      end
 
+      describe "#add?" do
+        it "should add the element to the set and return true on success and false if the element already exists" do
+          set_store.add?(10).should be_true
+          set_store.add?(10).should be_false
+          set_store.size.should eq 11
+        end
+      end
+
+      describe "#concat" do
+        it "should add the elements to the set" do
+          set_a = Wraith::SetStore(Int32).new
+          set_a.assign(Set{10, 11, 12, 13, 14})
+
+          set_store.concat(set_a)
+          set_store.size.should eq 15
+          set_store.includes?(10).should be_true
+          set_store.includes?(11).should be_true
+          set_store.includes?(12).should be_true
+          set_store.includes?(13).should be_true
+          set_store.includes?(14).should be_true
+        end
+      end
+
+      describe "#delete" do
+        it "should delete the element from the set and return true" do
+          set_store.delete(5).should be_true
+          set_store.size.should eq 9
+          set_store.includes?(5).should be_false
+        end
+
+        it "should return false if the element was not present" do
+          set_store.delete(10).should be_false
+          set_store.size.should eq 10
+          set_store.includes?(10).should be_false
+        end
+      end
+
+      describe "#subtract" do
+        it "should delete the elements from the other set_store from this set" do
+          sample_set2 = Set{5, 6, 7, 8, 9}
+          set_store2 = Wraith::SetStore(Int32).new
+          set_store2.assign(sample_set2)
+
+          set_store.subtract(set_store2)
+          set_store.size.should eq 5
+          set_store.includes?(5).should be_false
+          set_store.includes?(6).should be_false
+          set_store.includes?(7).should be_false
+          set_store.includes?(8).should be_false
+          set_store.includes?(9).should be_false
+        end
+
+        it "should delete the elements from the enumerable from this set" do
+          sample_set2 = Set{5, 6, 7, 8, 9}
+
+          set_store.subtract(sample_set2)
+          set_store.size.should eq 5
+          set_store.includes?(5).should be_false
+          set_store.includes?(6).should be_false
+          set_store.includes?(7).should be_false
+          set_store.includes?(8).should be_false
+          set_store.includes?(9).should be_false
         end
       end
     end

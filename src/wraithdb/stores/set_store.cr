@@ -41,11 +41,11 @@ module Wraith
     end
 
     def add(object : T)
-
+      store.add(object)
     end
 
     def add?(object : T) : Bool
-
+      store.add?(object)
     end
 
     def assign(new_set : Set(T)) : self
@@ -53,12 +53,13 @@ module Wraith
       self
     end
 
-    def concat(elems) : self
-
+    def concat(elems : SetStore(T)) : self
+      store.concat(elems.store)
+      self
     end
 
     def delete(object : T) : Bool
-
+      store.delete(object)
     end
 
     def intersects?(other : SetStore(T)) : Bool
@@ -77,8 +78,14 @@ module Wraith
       self.store.subset_of?(other.store)
     end
 
-    def subtract(other : Enumerable) : self
+    def subtract(other : SetStore(T)) : self
+      store.subtract(other.store)
+      self
+    end
 
+    def subtract(other : Enumerable) : self
+      store.subtract(other)
+      self
     end
 
     def |(other : SetStore(T)) : SetStore(T)
