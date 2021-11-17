@@ -1,5 +1,9 @@
+require "../atomically"
+
 module Wraith
   struct SetStore(T)
+    include Atomically
+
     getter store
 
     delegate :each, to: @store
@@ -10,6 +14,7 @@ module Wraith
 
     def initialize
       @store = Set(T).new
+      @atomic_lock = Mutex.new(:reentrant)
     end
 
     def &(other : SetStore(T)) : SetStore(T)
@@ -41,25 +46,35 @@ module Wraith
     end
 
     def add(object : T)
-      store.add(object)
+      atomically do
+        store.add(object)
+      end
     end
 
     def add?(object : T) : Bool
-      store.add?(object)
+      atomically do
+        store.add?(object)
+      end
     end
 
     def assign(new_set : Set(T)) : self
-      @store = new_set.clone
-      self
+      atomically do
+        @store = new_set.clone
+        self
+      end
     end
 
     def concat(elems : SetStore(T)) : self
-      store.concat(elems.store)
-      self
+      atomically do
+        store.concat(elems.store)
+        self
+      end
     end
 
     def delete(object : T) : Bool
-      store.delete(object)
+      atomically do
+        store.delete(object)
+      end
     end
 
     def intersects?(other : SetStore(T)) : Bool
@@ -79,12 +94,18 @@ module Wraith
     end
 
     def subtract(other : SetStore(T)) : self
-      store.subtract(other.store)
+      atomically do
+        store.subtract(other.store)
+      end
+
       self
     end
 
     def subtract(other : Enumerable) : self
-      store.subtract(other)
+      atomically do
+        store.subtract(other)
+      end
+
       self
     end
 
