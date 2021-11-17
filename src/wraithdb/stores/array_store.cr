@@ -1,5 +1,9 @@
+require "../atomically"
+
 module Wraith
   struct ArrayStore(T)
+    include Atomically
+
     getter store
 
     delegate :[], to: @store
@@ -28,19 +32,27 @@ module Wraith
 
     def initialize
       @store = [] of T
+      @atomic_lock = Mutex.new(:reentrant)
     end
 
     def <<(elem : T) : self
-      store << elem
+      atomically do
+        store << elem
+      end
+
       self
     end
 
     def []=(index : Int, value : T)
-      store[index] = value
+      atomically do
+        store[index] = value
+      end
     end
 
     def []=(range : Range, value : T)
-      store[range] = value
+      atomically do
+        store[range] = value
+      end
     end
 
     def ==(other_array) : Bool
@@ -52,21 +64,31 @@ module Wraith
     end
 
     def compact! : self
-      store.compact!
+      atomically do
+        store.compact!
+      end
+
       self
     end
 
     def delete(obj) : T?
-      store.delete(obj)
+      atomically do
+        store.delete(obj)
+      end
     end
 
     def delete_at(index : Int) : self
-      store.delete_at(index)
+      atomically do
+        store.delete_at(index)
+      end
+
       self
     end
 
     def pop : T
-      store.pop
+      atomically do
+        store.pop
+      end
     end
 
     # Append. Pushes one value to the end of `self`, given that the type of the value is *T*
@@ -84,7 +106,10 @@ module Wraith
     # a.push(1)   # => ["a", "b", "c", 1]
     # ```
     def push(value : T)
-      store.push(value)
+      atomically do
+        store.push(value)
+      end
+
       self
     end
 
@@ -96,7 +121,10 @@ module Wraith
     # a.push("b", "c") # => ["a", "b", "c"]
     # ```
     def push(*values : T) : self
-      store.push(values)
+      atomically do
+        store.push(values)
+      end
+
       self
     end
 
@@ -109,7 +137,10 @@ module Wraith
     # ary # => [1, 2]
     # ```
     def reject!(& : T ->) : self
-      store.reject! { |e| yield e }
+      atomically do
+        store.reject! { |e| yield e }
+      end
+
       self
     end
 
@@ -122,21 +153,32 @@ module Wraith
     # ary # => [1, 2, 8]
     # ```
     def reject!(pattern) : self
-      store.reject! { |elem| pattern === elem }
+      atomically do
+        store.reject! { |elem| pattern === elem }
+      end
+
       self
     end
 
     def reverse! : self
-      store.reverse!
+      atomically do
+        store.reverse!
+      end
+
       self
     end
 
     def shift : T
-      store.shift
+      atomically do
+        store.shift
+      end
     end
 
     def uniq! : self
-      store.uniq!
+      atomically do
+        store.uniq!
+      end
+
       self
     end
   end

@@ -1,11 +1,16 @@
+require "../atomically"
+
 module Wraith
   struct HashStore(K, V)
+    include Atomically
+
     getter store
 
     delegate dup, to: @store
 
     def initialize
       @store = {} of K => HashEntry(V)
+      @atomic_lock = Mutex.new(:reentrant)
     end
 
     # Returns the value of the key. If the key does not exist or has expired,
@@ -78,9 +83,11 @@ module Wraith
     # hash_store.set(key: "key", val: 1, ttl: 2.days)
     # ```
     def set(key : K, val : V, ttl = nil)
-      entry = HashEntry(V).new(val, ttl)
-      store[key] = entry
-      entry.value
+      atomically do
+        entry = HashEntry(V).new(val, ttl)
+        store[key] = entry
+        entry.value
+      end
     end
 
     # Sets the value for the key. Keys set with the `[]=` syntax do not support
@@ -94,13 +101,17 @@ module Wraith
     # hash_store["k"] = 1
     # ```
     def []=(key : K, val : V)
-      set(key, val)
+      atomically do
+        set(key, val)
+      end
     end
 
     # Deletes the key-value pair and returns the value, otherwise returns nil.
     def delete(key : K)
-      entry = store.delete(key)
-      entry ? entry.value : nil
+      atomically do
+        entry = store.delete(key)
+        entry ? entry.value : nil
+      end
     end
 
     # Returns the remaining time to live of a key. If a `ttl` is set
@@ -120,8 +131,10 @@ module Wraith
       entry = store[key]?
 
       if entry && ttl
-        entry.update_expiration(ttl)
-        store[key] = entry
+        atomically do
+          entry.update_expiration(ttl)
+          store[key] = entry
+        end
         entry.expires_in_ms
       elsif entry
         entry.expires_in_ms
@@ -173,12 +186,14 @@ module Wraith
     def inc(key : K, magnitude = 1) : V
       entry = store[key]?
 
-      if entry && !entry.expired?
-        entry.value += magnitude
-        store[key] = entry
-        entry.value
-      else
-        set(key, magnitude)
+      atomically do
+        if entry && !entry.expired?
+          entry.value += magnitude
+          store[key] = entry
+          entry.value
+        else
+          set(key, magnitude)
+        end
       end
     end
   end
