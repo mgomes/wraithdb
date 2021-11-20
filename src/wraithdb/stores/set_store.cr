@@ -60,15 +60,17 @@ module Wraith
     def assign(new_set : Set(T)) : self
       atomically do
         @store = new_set.clone
-        self
       end
+
+      self
     end
 
     def concat(elems : SetStore(T)) : self
       atomically do
         store.concat(elems.store)
-        self
       end
+
+      self
     end
 
     def delete(object : T) : Bool
